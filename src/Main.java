@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 import Game.Game;
 import Game.GlobalSettings;
 import Graphics.Screen;
+import Graphics.Text;
 import kuusisto.tinysound.TinySound;
 
 /*TODO
@@ -22,15 +23,14 @@ public class Main implements Runnable {
 
 	// --gameData--
 	long lastUpdateTime = 0;
+	long timeSinceLastUpdate = 0;
 
 	// --icon data--
 	BufferedImage fontData = null;
 
 	// --other objects--\
 	Game game;
-
-	// --jus' Declarin--
-	public final boolean FASTMODE = false; // disables rendering and cycles as fast as it can
+	Text fpsCounterText;
 
 	public static void main(String[] args) {
 		new Main().start();
@@ -73,6 +73,9 @@ public class Main implements Runnable {
 		// --initialize objects here--
 		game = new Game();
 		GlobalSettings.setGame(game);
+		
+		fpsCounterText = new Text(10,170, new Color(255,255,255),1);
+		fpsCounterText.isInstant(true);
 	}
 
 	public void update() {
@@ -81,8 +84,9 @@ public class Main implements Runnable {
 
 		nsPerTick = 1000000000 / 60;
 		
+		timeSinceLastUpdate = now - lastUpdateTime;
 
-		if (now - lastUpdateTime > nsPerTick) {
+		if (timeSinceLastUpdate > nsPerTick) {
 			lastUpdateTime = now;
 			tick();
 			render();
@@ -92,14 +96,15 @@ public class Main implements Runnable {
 	// -- fun stuff below --
 
 	void render() {
-		if (!FASTMODE) {
-			screen.background(new Color(35,58,71, 255));
-			game.render();
-			screen.render();
-		}
+		screen.background(new Color(35,58,71, 255));
+		game.render();
+		fpsCounterText.render();
+		screen.render();
 	}
 
 	public void tick() {
 		game.update();
+		fpsCounterText.setText(Float.toString(1000000000f/timeSinceLastUpdate));
+		fpsCounterText.update();
 	}
 }
